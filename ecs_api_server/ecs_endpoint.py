@@ -13,8 +13,6 @@ app.url_for('static', filename='favicon.ico') == '/static/favicon.ico'
 ecs_api_url = os.environ['ECS_API']
 ecs_api_url = ecs_api_url.replace('/','')
 
-print(ecs_api_url);
-
 api_comp = ecs_api_url.split(':')
 api_host = api_comp[1]
 api_port = api_comp[2]
