@@ -1,6 +1,4 @@
 #!/bin/bash
-# Clean up
-clear
 
 # Build latest docker image
 docker build -t rosrect_ecs_api . -f Dockerfile
@@ -13,6 +11,6 @@ docker rm ecs_api_server
 # Start ECS API
 docker run -it --env-file runtime.env \
 --name=ecs_api_server \
---net=host \
---volume="${HOME}/rosrect-ecs-api/ecs.db:/root/.cognicept/ecs.db" \
-rosrect_ecs_api /ecs_api_server/ecs_endpoint.py
+-p 8000:8000 \
+--volume="${HOME}/open_ecs_api_server/ecs.db:/root/.cognicept/ecs.db" \
+rosrect_ecs_api /src/ecs_endpoint.py
