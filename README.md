@@ -44,7 +44,7 @@ You can get access to the API server by cloning this repo. After this, there are
 
 You can use this approach if you are planning on running this on a system where installing python packages natively is not an issue. These have been tested on Ubuntu OS. Steps are as follows:
 
-1.  The API server runs on python3. To check if `python3` is available on your system, execute the following command on the terminal:
+1.  The API server runs on python3. To check if `python3` is available on your system, execute the following command on the terminal. `3.6.9` is the minimum version required:
 
         $ python3 --version
           Python 3.6.9
@@ -149,6 +149,13 @@ You can use this approach if you are planning on running the ECS API server on a
     
 That is it for the Docker installation! You can now jump to [Syntax](#syntax).
 
+## Browsing the Local Database
+The repo has the latest database file available as `ecs.db`. This is a file database using [SQLite][3]. So it can be interacted with graphically using things like [`sqlitebrowser`][4] and programmatically using python packages like [`sqlite3`][5], [`aiosqlite`][6], [`databases`][7] etc. This API uses [`Sanic`][8] with the `databases` package. Screenshot below shows how one of the tables look in sqlitebrowser:
+
+![alt text](docs/images/BrowseDB.png "Browse Database") 
+
+**NOTE:** If you are planning on doing updates to this local file database (either graphically or programmatically), please be aware that any update function will overwrite your changes! Either rename the local file database and use that OR help the community by posting the local changes to Error Reporting Tool (ERT), so we can classify the logs! Take a look at the ERT guide [here][9].
+
 ## Syntax
 The ECS API server can be configured using the following environment variables:
 
@@ -176,17 +183,21 @@ Now, you can run the ECS API server using `python3`:
 That is it for the native configure and run! If you wish, you can press `Ctrl+C` to terminate the native server. You can now jump to [Examples](#examples).
 
 ### Configure and Run for Docker
-In case of a Docker installation, you can simply use the [`runtime.env`](runtime.env) file in this repository as an example template and pass it to the docker container with the `--env-file` argument when using the `docker run` command. Simply edit the `runtime.env` like a text file, or comment the unnecessary variables and then rerun the container. Note that, we also need to mount the database file in the correct location. Example below:
+In case of a Docker installation, you can simply use the [`runtime.env`](runtime.env) file in this repository as an example template and pass it to the docker container with the `--env-file` argument when using the `docker run` command. Simply edit the `runtime.env` like a text file, or comment the unnecessary variables and then rerun the container. Example below:
 
     $ docker run -it \
     --env-file runtime.env \
-    --network=host \
+    -p 8000:8000 \
     --name=ecs_api_server  \
     --volume="${HOME}/rosrect-ecs-api-server/ecs.db:/root/.cognicept/ecs.db" \
     rosrect_ecs_api_server:latest  \
     ecs_api_server/ecs_endpoint.py
     [2020-08-18 09:43:01 +0000] [1] [INFO] Goin' Fast @ http://127.0.0.1:8000
     [2020-08-18 09:43:01 +0000] [1] [INFO] Starting worker [1]
+
+**Note:** When using the dockerized API, we need to remember 2 things:
+1. Expose the correct port to make sure the `ECS_API` port matches here using the `-p` option
+2. Mount the database file in the correct location using the `--volume` option
 
 That is it for the Docker configure and run! If you wish, you can press `Ctrl+C` to terminate the native server. You can now jump to [Examples](#examples).
 
@@ -224,6 +235,20 @@ For more related information, refer to:
 
 * [ECS Intro Document][1]
 * [Docker Installation][2]
+* [SQLite][3]
+* [sqlitebrowser][4]
+* [sqlite3][5]
+* [aiosqlite][6]
+* [databases][7]
+* [Sanic][8]
+* [Error Reporting Tool - ERT][9]
 
 [1]: /docs/ECS_INTRO.md
 [2]: https://docs.docker.com/engine/install/ubuntu/
+[3]: https://sqlite.org/index.html
+[4]: https://sqlitebrowser.org/
+[5]: https://docs.python.org/3/library/sqlite3.html
+[6]: https://github.com/omnilib/aiosqlite
+[7]: https://www.encode.io/databases/
+[8]: https://sanic.readthedocs.io/en/latest/
+[9]: /docs/ERT_INTRO.md
