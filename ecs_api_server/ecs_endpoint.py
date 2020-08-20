@@ -9,9 +9,12 @@ app.static('/static', './static')
 
 app.url_for('static', filename='favicon.ico') == '/static/favicon.ico'
 
-# Parsing API Components 
+# Parsing API Components
 ecs_api_url = os.environ['ECS_API']
 ecs_api_url = ecs_api_url.replace('/','')
+
+print(ecs_api_url);
+
 api_comp = ecs_api_url.split(':')
 api_host = api_comp[1]
 api_port = api_comp[2]
@@ -40,11 +43,13 @@ async def get_ert_alldata(request):
 
     # Return results
     return response.json({'status': 200, 'data': jsonify(rows)}, status=200)
+    #return response.json()
+
 
 
 @app.route("/api/ert/getErrorData")
 async def get_ert_errordata(request):
-    """ Primary API that can be used to retrieve ERT row corresponding to a robot model/error text combo 
+    """ Primary API that can be used to retrieve ERT row corresponding to a robot model/error text combo
         ERT should be primarily used only in development environment, not production. """
 
     # Get database
@@ -59,12 +64,12 @@ async def get_ert_errordata(request):
     query = """
             SELECT error_code, cast(error_level as integer) as 'error_level', compounding_flag, error_module, error_source, error_text, error_description, error_resolution
             FROM error_report
-            WHERE (:robot_model LIKE robot_model COLLATE NOCASE) AND (:error_text LIKE error_text COLLATE NOCASE); 
+            WHERE (:robot_model LIKE robot_model COLLATE NOCASE) AND (:error_text LIKE error_text COLLATE NOCASE);
             """
 
     # Retrieve query
     rows = await db.fetch_all(query=query, values={"robot_model": RobotModel, "error_text": ErrorText})
-    
+
     # Return results
     return response.json({'status': 200, 'data': jsonify(rows)}, status=200)
 
@@ -91,7 +96,7 @@ async def get_ecs_alldata(request):
 
 @app.route("/api/ecs/getErrorData")
 async def get_ecs_errordata(request):
-    """ Primary API that can be used to retrieve ECS row corresponding to a robot model/error text combo 
+    """ Primary API that can be used to retrieve ECS row corresponding to a robot model/error text combo
         ECS should be the primary choice in a production environment. """
 
     # Get database
@@ -151,7 +156,7 @@ def jsonify(records):
             else:
                 row['compounding_flag'] = False
             processed_list.append(row)
-    
+
     # If processed list is empty, no processing was done, just assign raw list
     if not processed_list:
         processed_list = raw_list
