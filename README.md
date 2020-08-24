@@ -154,15 +154,15 @@ The repo has the latest database file available as `ecs.db`. This is a file data
 
 ![alt text](docs/images/BrowseDB.png "Browse Database") 
 
-**NOTE:** If you are planning on doing updates to this local file database (either graphically or programmatically), please be aware that any update function will overwrite your changes! Either rename the local file database and use that OR help the community by posting the local changes to Error Reporting Tool (ERT), so we can classify the logs! Take a look at the ERT guide [here][9].
+**NOTE:** If you are planning on doing updates to this local file database (either graphically or programmatically), please be aware that any update function will overwrite your changes! Either rename the local file database and use that OR help the community by posting the local changes to Error Reporting Tool (ERT), so we can classify the logs! Take a look at the ERT introduction [here][9].
 
 ## Syntax
 The ECS API server can be configured using the following environment variables:
 
-| Variable     | Type   |        Default        | Description                                                                          |
-|--------------|:-------|:---------------------:|:-------------------------------------------------------------------------------------|
-| `ECS_DB_LOC` | String | `~/.cognicept/ecs.db` | ECS Database File location. If this location is incorrect the server will error out. |
-| `ECS_API`    | String | `http://0.0.0.0:8000` | REST API Endpoint *to be served*. Use this to serve the endpoint at a desired port   |
+| Variable     | Type   |        Default        | Description                                                                                                                |
+|--------------|:-------|:---------------------:|:---------------------------------------------------------------------------------------------------------------------------|
+| `ECS_DB_LOC` | String |          NA           | ECS Database File location. If this location is incorrect the server will error out.                                       |
+| `ECS_API`    | String | `http://0.0.0.0:8000` | REST API Endpoint *to be served*. Use this to serve the endpoint at a desired port. If not specified, `8000` will be used. |
 
 Based on the type of installation, you can configure these variables by different methods as follows.
 
@@ -207,26 +207,35 @@ That is it for the Docker configure and run! If you wish, you can press `Ctrl+C`
 
 In this example, we will explore the built-in API endpoints to query the Error Reporting Table and the Error Classification Stack. The following API endpoints are available:
 
-| API Endpoint            | Type |          Parameters          | Description                                                                                                                                                                    |
-|-------------------------|:-----|:----------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `/api/ert/getAllData`   | GET  |             `NA`             | Test API that can be used to quickly see ERT data                                                                                                                              |
-| `/api/ert/getErrorData` | GET  | `RobotModel`, `ErrorText` | Primary API that can be used to retrieve ERT row corresponding to a robot model/error text combo ERT should be primarily used only in development environment, not production. |
-| `/api/ecs/getAllData`   | GET  |             `NA`             | Test API that can be used to quickly see ECS data                                                                                                                              |
-| `/api/ecs/getErrorData` | GET  | `RobotModel`, `ErrorText` | Primary API that can be used to retrieve ECS row corresponding to a robot model/error text combo ECS should be the primary choice in a production environment.                 |
+| API Endpoint      | Type | Parameters                | Description                                                                                                                                                                    |
+|-------------------|:-----|:--------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `/ping`           | GET  | `NA`                      | Test API that can be used to quickly see if API is live or not.                                                                                                                |
+| `/ert/error-data` | GET  | `RobotModel`, `ErrorText` | Primary API that can be used to retrieve ERT row corresponding to a robot model/error text combo ERT should be primarily used only in development environment, not production. |
+| `/ecs/error-data` | GET  | `RobotModel`, `ErrorText` | Primary API that can be used to retrieve ECS row corresponding to a robot model/error text combo ECS should be the primary choice in a production environment.                 |
 
 
 Let's try these endpoints as follows. These should work for default cases. In case you changed the configuration, make sure the URL is appropriately changed:
 
 1. Run the ECS API server in one of two ways as explained in the [Syntax](#syntax) section.
 
-2. Open a browser window and access the following URL to see a snapshot of the ERT data, alternatively just click on this hyperlink and open in a new tab: [http://localhost:8000/api/ert/getAllData](http://localhost:8000/api/ert/getAllData)
+2. Open a terminal window and and use `curl` to test the `/ping` route:    
+    ```
+    $ curl 'http://localhost:8000/ping'
 
-3. Open a browser window and access the following URL to see a snapshot of the ECS data, alternatively just click on this hyperlink and open in a new tab: [http://localhost:8000/api/ecs/getAllData](http://localhost:8000/api/ecs/getAllData)
+    {"data":"ECS API is Live!"}
+    ```
+3. Open a terminal window and and use `curl` to test the `/ert/error-data` route:
+    ```
+    $ curl 'http://localhost:8000/ert/error-data/?RobotModel=Turtlebot3&ErrorText=Aborting+because+the+robot+appears+to+be+oscillating+over+and+over.+Even+after+executing+all+recovery+behaviors'
 
-4. Open a browser window and access the following URL to see the result of an actual ERT query, alternatively just click on this hyperlink and open in a new tab: [http://localhost:8000/api/ert/getErrorData/?RobotModel=Turtlebot3&ErrorText=Aborting+because+the+robot+appears+to+be+oscillating+over+and+over.+Even+after+executing+all+recovery+behaviors](http://localhost:8000/api/ert/getErrorData/?RobotModel=Turtlebot3&ErrorText=Aborting+because+the+robot+appears+to+be+oscillating+over+and+over.+Even+after+executing+all+recovery+behaviors)
+    {"data":[{"error_code":"Null","error_level":8,"compounding_flag":false,"error_module":"Navigation","error_source":"move_base","error_text":"Aborting because the robot appears to be oscillating over and over. Even after executing all recovery behaviors","error_description":"The robot is unable to find a path. This usually means the robot is mislocalized.","error_resolution":"Relocalize the robot using intervention, assign a sample goal as test, and if successful, assign to its previous goal. If not, escalate to property."}]}
+    ```
+4. Open a terminal window and and use `curl` to test the `/ecs/error-data` route:
+    ```
+    $ curl 'http://localhost:8000/ecs/error-data/?RobotModel=Turtlebot3&ErrorText=Aborting+because+the+robot+appears+to+be+oscillating+over+and+over.+Even+after+executing+all+recovery+behaviors'
 
-5. Open a browser window and access the following URL to see the result of an actual ECS query, alternatively just click on this hyperlink and open in a new tab: [http://localhost:8000/api/ecs/getErrorData/?RobotModel=Turtlebot3&ErrorText=Aborting+because+the+robot+appears+to+be+oscillating+over+and+over.+Even+after+executing+all+recovery+behaviors](http://localhost:8000/api/ecs/getErrorData/?RobotModel=Turtlebot3&ErrorText=Aborting+because+the+robot+appears+to+be+oscillating+over+and+over.+Even+after+executing+all+recovery+behaviors)
-
+    {"data":[{"cognicept_error_code":"Null","severity":"16","compounding_flag":false,"error_module":"Navigation","error_source":"move_base","error_text":"Aborting because the robot appears to be oscillating over and over. Even after executing all recovery behaviors"}]}
+    ```
 
 These are the kind of API calls the agent makes to perform error suppression and classification!
 
