@@ -3,6 +3,7 @@ A python script to pull the latest data from centralized ECS to the local file d
 """
 
 import os
+import time
 import sqlite3
 from sqlite3 import OperationalError
 import requests
@@ -31,11 +32,22 @@ def update_db():
     # call API to get data
     ecs_basic_uri = "https://ert.cognicept.systems/update/basic"
     try:
-        resp = requests.get(ecs_basic_uri, timeout=5)
+        # Get data. Retry a few (5) times if it fails
+        total_retries = 3
+        while True:
+            total_retries -= 1
+            try:
+                resp = requests.get(ecs_basic_uri, timeout=0.5)
+                break
+            except Exception:
+                if total_retries == 0:
+                    raise
+                else:
+                    print(f"{BColors.WARNING}Retrying...{BColors.ENDC}")
+                    time.sleep(0.5)
 
         if resp.status_code != 200:
             print(f"{BColors.FAIL}REST API error{BColors.ENDC}")
-            # return
         else:
             # Get JSON data
             ecs_db_dump = pd.DataFrame(resp.json()["error_classification"])
@@ -45,94 +57,146 @@ def update_db():
             ecs_db_dump["error_resolution"] = ecs_db_dump["error_resolution"].astype(
                 str)
 
-            # Connect to database
-            conn = sqlite3.connect(db_path)
+            try:
+                # Connect to database
+                conn = sqlite3.connect(db_path)
+                # Create a cursor
+                cur = conn.cursor()
+            except OperationalError:
+                print(f"{BColors.FAIL}CONNECTION ERROR: \
+Unable to connect to database.{BColors.ENDC}")
+                raise OperationalError
 
-            # Create a cursor
-            cur = conn.cursor()
+            # Drop existing tables if any
+            try:
+                cur.execute('''DROP TABLE error_classification''')
+            except OperationalError:
+                print("error_classification table doesn't exist, will create.")
+                raise OperationalError
 
-            # Drop existing tables
-            cur.execute('''DROP TABLE error_classification''')
-            cur.execute('''DROP TABLE error_report''')
-            cur.execute('''DROP TABLE robot_info''')
+            try:
+                cur.execute('''DROP TABLE error_report''')
+            except OperationalError:
+                print("error_report table doesn't exist, will create.")
+                raise OperationalError
+
+            try:
+                cur.execute('''DROP TABLE robot_info''')
+            except OperationalError:
+                print("robot_info table doesn't exist, will create.")
+                raise OperationalError
 
             # Create tables
-            cur.execute('''CREATE TABLE error_classification
-               (classification_id integer,
-                client_error_code text,
-                cognicept_error_code text,
-                compounding_flag booleantext,
-                error_id integer,
-                error_module text,
-                error_resolution json,
-                error_source text,
-                error_text text,
-                error_type json,
-                error_uuid text,
-                robot_type integer,
-                severity text)''')
+            try:
+                cur.execute('''CREATE TABLE error_classification
+                (classification_id integer,
+                    client_error_code text,
+                    cognicept_error_code text,
+                    compounding_flag booleantext,
+                    error_id integer,
+                    error_module text,
+                    error_resolution json,
+                    error_source text,
+                    error_text text,
+                    error_type json,
+                    error_uuid text,
+                    robot_type integer,
+                    severity text)''')
+            except OperationalError:
+                print(f"{BColors.FAIL}CREATE TABLE ERROR: \
+error_classification table.{BColors.ENDC}")
+                raise OperationalError
 
-            cur.execute('''CREATE TABLE error_report
-               (compounding_flag booleantext,
-                error_code text,
-                error_description text,
-                error_id integer,
-                error_level text,
-                error_module text,
-                error_resolution text,
-                error_source text,
-                error_text text,
-                robot_make text,
-                robot_model text,
-                robot_site text)''')
+            try:
+                cur.execute('''CREATE TABLE error_report
+                (compounding_flag booleantext,
+                    error_code text,
+                    error_description text,
+                    error_id integer,
+                    error_level text,
+                    error_module text,
+                    error_resolution text,
+                    error_source text,
+                    error_text text,
+                    robot_make text,
+                    robot_model text,
+                    robot_site text)''')
+            except OperationalError:
+                print(f"{BColors.FAIL}CREATE TABLE ERROR: error_report table.{BColors.ENDC}")
+                raise OperationalError
 
-            cur.execute('''CREATE TABLE robot_info
-               (robot_id integer,
-                robot_make text,
-                robot_model text,
-                robot_site text)''')
+            try:
+                cur.execute('''CREATE TABLE robot_info
+                (robot_id integer,
+                    robot_make text,
+                    robot_model text,
+                    robot_site text)''')
+            except OperationalError:
+                print(f"{BColors.FAIL}CREATE TABLE ERROR: robot_info table.{BColors.ENDC}")
+                raise OperationalError
 
             # Insert rows
-            ecs_db_dump = pd.DataFrame(
-                ecs_db_dump, columns=['classification_id', 'client_error_code',
-                                      'cognicept_error_code', 'compounding_flag',
-                                      'error_id', 'error_module', 'error_resolution',
-                                      'error_source', 'error_text', 'error_type',
-                                      'error_uuid', 'robot_type', 'severity'])
-            cur.executemany(
-                'INSERT INTO error_classification VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
-                ecs_db_dump.values.tolist())
+            try:
+                ecs_db_dump = pd.DataFrame(
+                    ecs_db_dump, columns=['classification_id', 'client_error_code',
+                                          'cognicept_error_code', 'compounding_flag',
+                                          'error_id', 'error_module', 'error_resolution',
+                                          'error_source', 'error_text', 'error_type',
+                                          'error_uuid', 'robot_type', 'severity'])
+                cur.executemany(
+                    'INSERT INTO error_classification VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                    ecs_db_dump.values.tolist())
+            except OperationalError:
+                print(f"{BColors.FAIL}INSERT ERROR: error_classification table.{BColors.ENDC}")
+                raise OperationalError
 
-            ert_db_dump = pd.DataFrame(
-                ert_db_dump, columns=['compounding_flag', 'error_code', 'error_description',
-                                      'error_id', 'error_level', 'error_module',
-                                      'error_resolution', 'error_source', 'error_text',
-                                      'robot_make', 'robot_model', 'robot_site'])
-            cur.executemany(
-                'INSERT INTO error_report VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
-                ert_db_dump.values.tolist())
+            try:
+                ert_db_dump = pd.DataFrame(
+                    ert_db_dump, columns=['compounding_flag', 'error_code', 'error_description',
+                                          'error_id', 'error_level', 'error_module',
+                                          'error_resolution', 'error_source', 'error_text',
+                                          'robot_make', 'robot_model', 'robot_site'])
+                cur.executemany(
+                    'INSERT INTO error_report VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
+                    ert_db_dump.values.tolist())
+            except OperationalError:
+                print(f"{BColors.FAIL}INSERT ERROR: error_report table.{BColors.ENDC}")
+                raise OperationalError
 
-            ri_db_dump = pd.DataFrame(
-                ri_db_dump, columns=['robot_id', 'robot_make', 'robot_model', 'robot_site'])
-            cur.executemany(
-                'INSERT INTO robot_info VALUES (?,?,?,?)', ri_db_dump.values.tolist())
+            try:
+                ri_db_dump = pd.DataFrame(
+                    ri_db_dump, columns=['robot_id', 'robot_make', 'robot_model', 'robot_site'])
+                cur.executemany(
+                    'INSERT INTO robot_info VALUES (?,?,?,?)', ri_db_dump.values.tolist())
+            except OperationalError:
+                print(f"{BColors.FAIL}INSERT ERROR: robot_info table.{BColors.ENDC}")
+                raise OperationalError
 
             # Save (commit) the changes
-            conn.commit()
+            try:
+                conn.commit()
+            except OperationalError:
+                print(f"{BColors.FAIL}SAVE ERROR: Unable to save update changes.{BColors.ENDC}")
+                raise OperationalError
 
             # Close connection
-            conn.close()
+            try:
+                conn.close()
+            except OperationalError:
+                print(f"{BColors.FAIL}CONNECTION ERROR: \
+Unable to disconnect from database.{BColors.ENDC}")
+                raise OperationalError
+
         print(f"{BColors.OKGREEN}ECS basic update successful.{BColors.ENDC}")
 
     except requests.exceptions.Timeout:
-        print("REST API error: time out.")
-        # return
+        print(f"{BColors.FAIL}REST API error: time out.{BColors.ENDC}")
     except requests.exceptions.TooManyRedirects:
-        print("REST API error: Wrong endpoint.")
-        # return
-    # except:
-    #     print("REST API error")
-    #     raise SystemExit()
+        print(f"{BColors.FAIL}REST API error: Wrong endpoint.{BColors.ENDC}")
+    except OperationalError:
+        print(f"{BColors.FAIL}Could not update ECS because of Database error.{BColors.ENDC}")
+    except:
+        print(f"{BColors.FAIL}REST API error.{BColors.ENDC}")
 
 
 if __name__ == "__main__":
