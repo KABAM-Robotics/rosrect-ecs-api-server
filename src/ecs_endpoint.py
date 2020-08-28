@@ -168,7 +168,7 @@ def rows_to_list(records):
     processed_list = []
     for row in raw_list:
         if 'compounding_flag' in row:
-            if row['compounding_flag'] == 'true':
+            if row['compounding_flag'] == '1':
                 row['compounding_flag'] = True
             else:
                 row['compounding_flag'] = False
