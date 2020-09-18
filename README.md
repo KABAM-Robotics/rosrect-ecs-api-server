@@ -1,8 +1,8 @@
-# rosrect ECS API Server
+# error_classification_server <--> error_classification_database Documentation
 
-Hello there! Thanks for checking out the ECS documentation. This particular document is a user's guide. If you are more interested in what the ECS is designed for, and the architecture, please take a look at the introduction document [here][1]!
+Hello there! Thanks for checking out the `error_classification_server` and `error_classification_database` documentation. This particular document is a user's guide. If you are more interested in what the Error Classification System is designed for, and the architecture, please take a look at the introduction document [here][1]!
 
-This project adheres to the Contributor Covenant [code of conduct](https://github.com/cognicept-admin/rosrect/blob/master/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to [info@cognicept.systems](mailto:info@cognicept.systems). If you are interested in contributing, please refer to the guidelines [here](https://github.com/cognicept-admin/rosrect/blob/master/CONTRIBUTING.md).  
+This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to [info@cognicept.systems](mailto:info@cognicept.systems). If you are interested in contributing, please refer to the guidelines [here](CONTRIBUTING.md).
 
 - [Description](#description)
 - [Overview](#overview)
@@ -19,17 +19,17 @@ This project adheres to the Contributor Covenant [code of conduct](https://githu
 - [Related-Pages](#related-pages)
 
 ## Description
-This article explains how to run the `rosrect ECS API` server.
+This article explains how to run the `error_classification_server`.
 
 ## Overview
-This article shows how to start the `rosrect ECS API` server. By the end of this, you will be able to start the API server and run a few sample GET requests from the ECS API.
+This article shows how to start the `error_classification_server`. By the end of this, you will be able to start the API server and run a few sample GET requests to query the `error_classification_database`.
 
 ## Prerequisites
 Some knowledge of REST APIs and `python` is necessary.
 
 ## Installation
 
-You can get access to the API server by cloning this repo. After this, there are a couple of choices as to how you want to build and run the API server. Either natively, or using Docker. Steps are as follows:
+You can get access to the API server by cloning this repo. After this, there are a couple of choices as to how you want to build and run the server. Either natively, or using Docker. Steps are as follows:
 
 1. Open a terminal window.
 
@@ -39,13 +39,13 @@ You can get access to the API server by cloning this repo. After this, there are
     
 3. Clone the repo:
     
-        $ git clone https://github.com/cognicept-admin/rosrect-ecs-api-server.git
+        $ git clone https://github.com/cognicept-admin/error_classification_server.git
     
 ### Building natively:
 
 You can use this approach if you are planning on running this on a system where installing python packages natively is not an issue. These have been tested on Ubuntu OS. Steps are as follows:
 
-1.  The API server runs on python3. To check if `python3` is available on your system, execute the following command on the terminal. `3.6.9` is the minimum version required:
+1.  The server runs on python3. To check if `python3` is available on your system, execute the following command on the terminal. `3.6.9` is the minimum version required:
 
         $ python3 --version
           Python 3.6.9
@@ -54,7 +54,7 @@ You can use this approach if you are planning on running this on a system where 
     
 2. Install package dependencies using `pip3` and the provided requirements file `requirements.txt`:
     
-        $ cd ~/rosrect-ecs-api-server
+        $ cd ~/error_classification_server
         
         $ pip3 install -r requirements.txt 
             Collecting sanic
@@ -138,27 +138,27 @@ That is it for the native installation! You can now jump to [Syntax](#syntax).
 
 ### Building through Docker:
 
-You can use this approach if you are planning on running the ECS API server on a system where you may not want to install packages natively. 
+You can use this approach if you are planning on running the server on a system where you may not want to install packages natively. 
 
 1. First, make sure you have a working [Docker installation][2].
 
 2. You can then build the `docker` image using `docker build` and the provided `Dockerfile`:
 
-        $ cd ~/rosrect-ecs-api-server
+        $ cd ~/error_classification_server
         
-        $ docker build -t rosrect_ecs_api_server .
+        $ docker build -t error_classification_server .
     
 That is it for the Docker installation! You can now jump to [Syntax](#syntax).
 
 ## Browsing the Local Database
-The repo has the latest database file available as `ecs.db`. This is a file database using [SQLite][3]. So it can be interacted with graphically using things like [`sqlitebrowser`][4] and programmatically using python packages like [`sqlite3`][5], [`aiosqlite`][6], [`databases`][7] etc. This API uses [`Sanic`][8] with the `databases` package. Screenshot below shows how one of the tables look in sqlitebrowser:
+The repo has the latest `error_classification_database` file available as `ecs.db`. This is a file database using [SQLite][3]. So it can be interacted with graphically using things like [`sqlitebrowser`][4] and programmatically using python packages like [`sqlite3`][5], [`aiosqlite`][6], [`databases`][7] etc. The server uses [`Sanic`][8] with the `databases` package. Screenshot below shows how one of the tables look in `sqlitebrowser`:
 
 ![alt text](docs/images/BrowseDB.png "Browse Database") 
 
 **NOTE:** If you are planning on doing updates to this local file database (either graphically or programmatically), please be aware that any update function will overwrite your changes! Either rename the local file database and use that OR help the community by posting the local changes to Error Reporting Tool (ERT), so we can classify the logs! Take a look at the ERT introduction [here][9].
 
 ## Syntax
-The ECS API server can be configured using the following environment variables:
+The server can be configured using the following environment variables:
 
 | Variable     | Type   |        Default        | Description                                                                                                                |
 |--------------|:-------|:---------------------:|:---------------------------------------------------------------------------------------------------------------------------|
@@ -170,14 +170,14 @@ Based on the type of installation, you can configure these variables by differen
 ### Configure and Run for native installations
 In case of a native installation, you can create them using the `export` command at the terminal. For e.g. here is an example set of parameters:
 
-    $ export ECS_DB_LOC=~/rosrect-ecs-api-server/ecs.db
+    $ export ECS_DB_LOC=~/error_classification_server/ecs.db
     $ export ECS_API=http://0.0.0.0:8000
 
-**Note: These values are available only in the current terminal and need to be recreated every time before running the ECS API server. One way to get around this is to place these statements in the `bashrc` file**
+**Note: These values are available only in the current terminal and need to be recreated every time before running the server. One way to get around this is to place these statements in the `bashrc` file**
 
-Now, you can run the ECS API server using `python3`:
+Now, you can run the server using `python3`:
 
-    $ python3 ecs_api_server/ecs_endpoint.py
+    $ python3 src/ecs_endpoint.py
       [2020-08-18 17:32:53 +0800] [10601] [INFO] Goin' Fast @ http://127.0.0.1:8000
       [2020-08-18 17:32:53 +0800] [10601] [INFO] Starting worker [10601]
 
@@ -189,10 +189,10 @@ In case of a Docker installation, you can simply use the [`runtime.env`](runtime
     $ docker run -it \
     --env-file runtime.env \
     -p 8000:8000 \
-    --name=ecs_api_server  \
-    --volume="${HOME}/rosrect-ecs-api-server/ecs.db:/root/.cognicept/ecs.db" \
-    rosrect_ecs_api_server:latest  \
-    ecs_api_server/ecs_endpoint.py
+    --name=ec_server  \
+    --volume="${HOME}/error_classification_server/ecs.db:/root/.cognicept/ecs.db" \
+    error_classification_server:latest  \
+    src/ecs_endpoint.py
     [2020-08-18 09:43:01 +0000] [1] [INFO] Goin' Fast @ http://127.0.0.1:8000
     [2020-08-18 09:43:01 +0000] [1] [INFO] Starting worker [1]
 
@@ -206,7 +206,7 @@ That is it for the Docker configure and run! If you wish, you can press `Ctrl+C`
 
 ### Exploring built-in API endpoints
 
-In this example, we will explore the built-in API endpoints to query the Error Reporting Table and the Error Classification Stack. The following API endpoints are available:
+In this example, we will explore the built-in API endpoints to query the Error Reporting Table and the Error Classification Database. The following API endpoints are available:
 
 | API Endpoint      | Type | Parameters                | Description                                                                                                                                                                    |
 |-------------------|:-----|:--------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -217,7 +217,7 @@ In this example, we will explore the built-in API endpoints to query the Error R
 
 Let's try these endpoints as follows. These should work for default cases. In case you changed the configuration, make sure the URL is appropriately changed:
 
-1. Run the ECS API server in one of two ways as explained in the [Syntax](#syntax) section.
+1. Run the server in one of two ways as explained in the [Syntax](#syntax) section.
 
 2. Open a terminal window and and use `curl` to test the `/ping` route:    
     ```
@@ -241,14 +241,14 @@ Let's try these endpoints as follows. These should work for default cases. In ca
 These are the kind of API calls the agent makes to perform error suppression and classification!
 
 ## Update
-The local file based database was chosen for the ECS architecture, intentionally to keep it light, fast and flexible. However, this necessitates a manual sync of the local ECS with the centralized server that is maintained by the moderators. This is done by running a simple `python` script as follows:
+The local file based database was chosen for the ECS architecture, intentionally to keep it light, fast and flexible. However, this necessitates a manual sync of the local `error_classification_database` with the centralized version that is maintained by the moderators. This is done by running a simple `python` script as follows:
 
 **Note: The update operation simply pulls JSON data from the centralized ECS and recreates it on the client side. This means the operation will overwrite any local changes. Please be wary and backup/rename existing db files if you want to access those local changes!**
 
-    $ cd ~/rosrect-ecs-api-server
+    $ cd ~/error_classification_server
     $ python3 src/ecs_basic_update.py
     ECS db already exists here: 
-    /home/swaroophs/open_ecs_api_server/ecs_updated.db
+    /home/swaroophs/error_classification_server/ecs.db
     Are you sure you want to overwrite the existing db? You will lose any local changes: (Y/N) y
     ECS basic update successful.
 
@@ -265,7 +265,7 @@ For more related information, refer to:
 * [Sanic][8]
 * [Error Reporting Tool - ERT][9]
 
-[1]: /docs/ECS_INTRO.md
+[1]: docs/ECS_INTRO.md
 [2]: https://docs.docker.com/engine/install/ubuntu/
 [3]: https://sqlite.org/index.html
 [4]: https://sqlitebrowser.org/
@@ -273,4 +273,9 @@ For more related information, refer to:
 [6]: https://github.com/omnilib/aiosqlite
 [7]: https://www.encode.io/databases/
 [8]: https://sanic.readthedocs.io/en/latest/
-[9]: /docs/ERT_INTRO.md
+[9]: docs/ERT_INTRO.md
+
+## Acknowledgements
+We would like to acknowledge the Singapore government for their vision and support to start this ambitious research and development project, *"Accelerating Open Source Technologies for Cross Domain Adoption through the Robot Operating System"*. The project is supported by Singapore National Robotics Programme (NRP).
+
+Any opinions, findings and conclusions or recommendations expressed in this material are those of the author(s) and do not reflect the views of the NR2PO.

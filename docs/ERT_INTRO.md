@@ -1,8 +1,8 @@
-# rosrect ERT Introduction
+# Error Reporting Table Introduction
 
 ## The Concept
 
-In an effort to standardize robot diagnostics, we need a collection/reporting platform. This is the Error Reporting Tool (ERT). This can be thought of as a basic CRUD (Create, Read, Update and Delete) application/web front-end to the backend error report database. Users can add (using forms or upload file logs), view, search, update and delete records. The moderators of the community will use this as the primary incoming data source. New logs added will be classified by them if warranted and pushed to the Error Classification Stack (ECS) with standardized error codes and resolutions.
+In an effort to standardize robot diagnostics, we need a collection/reporting platform. This is the Error Reporting Tool (ERT). This can be thought of as a basic CRUD (Create, Read, Update and Delete) application/web front-end to the backend error report database. Users can add (using forms or upload file logs), view, search, update and delete records. The moderators of the community will use this as the primary incoming data source. New logs added will be classified by them if warranted and pushed to the Error Classification System (ECS) with standardized error codes and resolutions.
 
 ## Quick Start
 
