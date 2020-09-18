@@ -15,6 +15,7 @@ This project adheres to the Contributor Covenant [code of conduct](https://githu
     * [Configure and Run for Docker](#configure-and-run-for-docker)
 - [Examples](#examples)
     * [Exploring built-in API endpoints](#exploring-built-in-API-endpoints)
+- [Update](#update)
 - [Related-Pages](#related-pages)
 
 ## Description
@@ -238,6 +239,18 @@ Let's try these endpoints as follows. These should work for default cases. In ca
     ```
 
 These are the kind of API calls the agent makes to perform error suppression and classification!
+
+## Update
+The local file based database was chosen for the ECS architecture, intentionally to keep it light, fast and flexible. However, this necessitates a manual sync of the local ECS with the centralized server that is maintained by the moderators. This is done by running a simple `python` script as follows:
+
+**Note: The update operation simply pulls JSON data from the centralized ECS and recreates it on the client side. This means the operation will overwrite any local changes. Please be wary and backup/rename existing db files if you want to access those local changes!**
+
+    $ cd ~/rosrect-ecs-api-server
+    $ python3 src/ecs_basic_update.py
+    ECS db already exists here: 
+    /home/swaroophs/open_ecs_api_server/ecs_updated.db
+    Are you sure you want to overwrite the existing db? You will lose any local changes: (Y/N) y
+    ECS basic update successful.
 
 ## Related Pages
 For more related information, refer to:
